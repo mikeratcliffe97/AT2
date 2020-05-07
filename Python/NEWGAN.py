@@ -27,16 +27,7 @@ from PIL import Image
 from tqdm import tqdm
 import os
 
-    #from google.colab import drive
-    #drive.mount('/content/drive', force_remount=True)
-    #COLAB = True
-    #print("Note: using Google CoLab")
-    #%tensorflow_version 2.x
-#except:
-   # print("Note: not using Google CoLab")
-    #COLAB = True
-      
-    # Generation resolution - Must be square 
+
 # Training data is also scaled to this
 
 #Need this to run
@@ -53,7 +44,7 @@ IMAGE_CHANNELS = 3
 PREVIEW_ROWS = 4
 PREVIEW_COLS = 7
 PREVIEW_MARGIN = 16
-SAVE_FREQ = 100
+SAVE_FREQ = 10
 
 SEED_SIZE = 100
 #predict 
@@ -61,12 +52,11 @@ SEED_SIZE = 100
 DATA_PATH = '/dataset'
 EPOCHS = 10000
 BATCH_SIZE = 32
+
 print("Will generate %f px square images." % GENERATE_SQUARE)
 
 
 
-        
-        
 training_binary_path = os.path.join('dataset/training_data_{' + str(GENERATE_SQUARE) + '}_{' + str(GENERATE_SQUARE) + '}.npy')
 
 print("Looking for file: {training_binary_path}")
@@ -75,8 +65,8 @@ if not os.path.isfile(training_binary_path):
   print("Loading training images...")
 
   training_data = []
-  #a = os.path.join('dataset/test_set/cat/')
-  images_path = os.path.join('dataset/test_set/cat')
+  
+  images_path = os.path.join('dataset/test_set/firework')
   for filename in tqdm(os.listdir(images_path)):
       path = os.path.join(images_path,filename)
       image = Image.open(path).resize((GENERATE_SQUARE,GENERATE_SQUARE),Image.ANTIALIAS)
@@ -186,7 +176,7 @@ def save_images(cnt,noise):
         image_count += 1
 
           
-  output_path = os.path.join('dataset')
+  output_path = os.path.join('dataset/gen_images')
   if not os.path.exists(output_path):
     os.makedirs(output_path)
   
@@ -227,6 +217,7 @@ for epoch in range(EPOCHS):
 
     # Generate some images
     seed = np.random.normal(0,1,(BATCH_SIZE,SEED_SIZE))
+   
     x_fake = generator.predict(seed)
 
     # Train discriminator on real and fake
@@ -234,20 +225,12 @@ for epoch in range(EPOCHS):
     discriminator_metric_generated = discriminator.train_on_batch(x_fake,y_fake)
     discriminator_metric = 0.5 * np.add(discriminator_metric_real,discriminator_metric_generated)
     
-    # Train generator on Calculate losses-
-#    y_real = np.ones((BATCH_SIZE, 1))
     g_loss = combined.train_on_batch(seed,y_real)
-#
-#  
-#    print(
-#                "%d [D loss: %f, acc.: %.2f%%] [G loss: %f]"
-#                % (epoch,  discriminator_metric[0], 100 * discriminator_metric[1], g_loss)
-#            )
-#  
+    print(epoch)
     # Time for an update?
     if epoch % SAVE_FREQ == 0:
         save_images(cnt, fixed_seed)
         cnt += 1
         print(f"Epoch {epoch}, Discriminator accuracy: {discriminator_metric[1]}, Generator accuracy: {g_loss[1]}")
         
-generator.save(os.path.join("dataset/face_generator.h5"))
+generator.save(os.path.join("dataset/firework_gen.h5"))
